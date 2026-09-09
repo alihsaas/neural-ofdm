@@ -1,0 +1,60 @@
+{
+  "config": {
+    "fft_size": 64,
+    "cp_length": 16,
+    "pilot_spacing": 4,
+    "pilot_value": [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    "modulation_order": 4,
+    "random_seed": 2026,
+    "channel_model": "rayleigh",
+    "channel_taps": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.35,
+        0.15
+      ],
+      [
+        0.12,
+        -0.1
+      ]
+    ],
+    "rayleigh_powers": [
+      1.0,
+      0.4,
+      0.15,
+      0.05
+    ]
+  },
+  "seed": 2026,
+  "rng": "numpy.random.default_rng / PCG64; reset to seed at each SNR",
+  "snr_values_db": [
+    0.0,
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0
+  ],
+  "num_frames_per_snr": 10000,
+  "bits_per_snr": 960000,
+  "snr_definition": "received power averaged over retained N+CP samples / complex noise variance",
+  "fft_convention": "ortho for signals; backward (ordinary FFT) for FIR channel response",
+  "channel_policy": "fixed normalized taps, or independent Rayleigh realization per one-symbol frame",
+  "versions": {
+    "neural-ofdm": "0.1.0",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "python_version": "3.12.13",
+  "paired_receivers": true,
+  "nmse_aggregation": "arithmetic mean of per-frame linear NMSE over all FFT bins",
+  "zero_error_plot": "approximate 95% binomial upper bound; independent-bit assumption"
+}
