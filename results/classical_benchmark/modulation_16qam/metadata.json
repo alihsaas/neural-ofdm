@@ -1,0 +1,181 @@
+{
+  "experiment": {
+    "ofdm": {
+      "fft_size": 64,
+      "cp_length": 16,
+      "pilot_spacing": 4,
+      "pilot_value": [
+        0.7071067811865475,
+        0.7071067811865475
+      ],
+      "modulation_order": 16,
+      "random_seed": 2026,
+      "channel_model": "fixed",
+      "channel_taps": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.35,
+          0.15
+        ],
+        [
+          0.12,
+          -0.1
+        ]
+      ],
+      "rayleigh_powers": [
+        1.0,
+        0.4,
+        0.15,
+        0.05
+      ],
+      "channel": {
+        "model": "rayleigh",
+        "delays": [
+          0,
+          1,
+          3,
+          6
+        ],
+        "powers": null,
+        "decay_samples": 2.5,
+        "k_linear": 0.0,
+        "los_path": 0,
+        "los_phase_rad": 0.0,
+        "fixed_taps": [
+          1,
+          [
+            0.35,
+            0.15
+          ],
+          [
+            0.12,
+            -0.1
+          ],
+          0
+        ]
+      },
+      "noise_mode": "fixed",
+      "pilot_values": null
+    },
+    "reference_values_db": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
+    "frames": 3000,
+    "seed": 2026,
+    "equalizer": "zf",
+    "assumed_channel": null,
+    "assumed_noise_factor": 1.0,
+    "bootstrap_replicates": 1000
+  },
+  "schema_version": 1,
+  "versions": {
+    "neural-ofdm": "0.1.0",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "python_version": "3.12.13",
+  "noise_definition": "Es=1; sigma^2=10^(-reference_esn0_db/10), independent of channel and payload",
+  "noise_variance_units": "total complex sample variance; unitary FFT preserves it",
+  "fft_convention": "unitary signal FFT/IFFT; unscaled channel Fourier matrix",
+  "channel_policy": "independent channel per one-symbol frame; held constant within symbol",
+  "rician_definition": "global linear K; fixed-phase single unit-energy LOS path plus diffuse PDP",
+  "rng_policy": "PCG64, SeedSequence(seed).spawn(3): payload, channel, noise; reset each level and study",
+  "pairing": "all receivers including mismatch use identical received observations",
+  "cross_grid_policy": "same channel and standardized time noise across densities/modulations; payload length and waveform differ",
+  "uncertainty": "paired percentile bootstrap of independent frames, shared indices for all receivers; 95%",
+  "sparse_error_limit": "bootstrap can be unreliable with few error frames; raw counts always retained",
+  "zero_error_limit": "no bootstrap interval; frame event upper95 bounds BER conservatively because BER <= probability(any frame error)",
+  "bit_bound": "independent-bit approximation only; shared fading violates bit independence",
+  "nmse": "arithmetic mean of per-frame ||error||^2/||H||^2, all bins, linear units",
+  "ensemble_nmse": "sum channel squared error / sum true channel energy, all frames and bins",
+  "evm": "RMS over per-frame payload EVM squared; decision output gain corrected; raw output separately labeled",
+  "estimator_diagnostics": [
+    {
+      "reference_esn0_db": 0,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 8.758583108543673,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 8.75858310854366e-12,
+      "assumed_noise_variance": 1.0,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 5,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 25.534794038707492,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 8.074810874560494e-12,
+      "assumed_noise_variance": 0.31622776601683794,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 10,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 78.58583108543749,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 7.858583108543657e-12,
+      "assumed_noise_variance": 0.1,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 15,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 246.34794038708225,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 7.790205885145341e-12,
+      "assumed_noise_variance": 0.03162277660168379,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 20,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 776.8583108544693,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 7.768583108543655e-12,
+      "assumed_noise_variance": 0.01,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 25,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 2454.4794038718005,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 7.761745386203822e-12,
+      "assumed_noise_variance": 0.0031622776601683794,
+      "jitter": 0.0
+    },
+    {
+      "reference_esn0_db": 30,
+      "receiver": "lmmse",
+      "method": "Hermitian Cholesky solve",
+      "observation_rank": 16,
+      "condition_number": 7759.583108555017,
+      "relative_tolerance": 1e-12,
+      "eigenvalue_cutoff": 7.759583108543655e-12,
+      "assumed_noise_variance": 0.001,
+      "jitter": 0.0
+    }
+  ]
+}

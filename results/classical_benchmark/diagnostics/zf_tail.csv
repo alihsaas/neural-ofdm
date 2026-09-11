@@ -1,0 +1,3 @@
+reference_esn0_db,seed,frames,receiver,equalizer,frame_rms_evm,median_frame_evm,largest_frame_fraction_of_evm_squared_sum,largest_five_frames_fraction,largest_frame,largest_evm_squared,largest_min_estimated_payload_gain,largest_worst_bin,largest_estimated_gain_at_worst_bin,largest_true_gain_at_worst_bin,largest_stabilized_bins
+20,2026,3000,lmmse,zf,0.35842555679706695,0.21288245661305233,0.06717669745224528,0.15772439852115566,2937,25.890345204064776,0.006180843020584218,29,0.006180843020584218,0.062477103848512155,0
+25,2026,3000,lmmse,zf,0.5910946199356684,0.11987229599067688,0.8848287210788196,0.8964278063961164,964,927.458485107246,0.00042812022675639544,25,0.00042812022675639544,0.056812922401880635,0

@@ -52,3 +52,26 @@ Even with no noise, LS on the fixed channel has an NMSE of about **8.85e-5**
 (-40.53 dB) because straight-line interpolation between pilots is not exact.
 
 ![Rayleigh BER comparison](results/baseline_rayleigh/ber_vs_snr.png)
+
+## Stage 2: classical benchmark
+
+```powershell
+uv run python scripts/run_classical_benchmark.py --frames 3000 --seed 2026
+uv run python scripts/run_classical_benchmark.py --plots-only
+uv run python scripts/validate_notebook.py notebooks/02_classical_channel_estimation.ipynb
+```
+
+I ran nine studies (saved in `results/classical_benchmark/`): the main receiver
+comparison, pilot spacing 2/4/8, QPSK vs 16-QAM, Rayleigh vs Rician K=1/10, and
+LMMSE with wrong channel statistics. Each point uses 3,000 frames at reference
+Es/N0 = 0, 5, ..., 30 dB. Here the noise variance is fixed at
+`sigma^2=10^(-reference_esn0_db/10)` (with Es=1), so deep fades really do lower
+the received SNR. This axis is different from the SNR used in stage 1, and neither
+one is Eb/N0.
+
+At 15 dB on the Rayleigh channel with pilot spacing 4, I measured BER **0.03004 for
+LS** and **0.01798 for LMMSE**, with mean NMSE **0.04785** and **0.01158**. At 30 dB
+LMMSE got **0.0006181** while LS stayed at **0.007802**. LS levels off because a
+straight line between pilots cannot follow this channel exactly. Each receiver had
+288,000 payload bits per point. The full numbers and derivations are in the
+[classical benchmark report](CLASSICAL_BENCHMARK_REPORT.md).
