@@ -75,3 +75,7 @@ LMMSE got **0.0006181** while LS stayed at **0.007802**. LS levels off because a
 straight line between pilots cannot follow this channel exactly. Each receiver had
 288,000 payload bits per point. The full numbers and derivations are in the
 [classical benchmark report](CLASSICAL_BENCHMARK_REPORT.md).
+
+## Dataset for channel estimation
+
+I generate OFDM frames with separate seeds for training, validation, and test. Run `uv run --extra neural python scripts/generate_dataset.py --protocol configs/neural_channel_estimation/protocol.json`.
