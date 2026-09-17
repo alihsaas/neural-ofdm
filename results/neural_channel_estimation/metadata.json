@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "schema_version": 2,
+    "name": "neural_channel_estimation",
+    "paths": {
+      "training_datasets": "datasets/neural_channel_estimation",
+      "test_datasets": "datasets/neural_channel_estimation",
+      "checkpoints": "checkpoints/neural_channel_estimation",
+      "results": "results/neural_channel_estimation"
+    },
+    "dataset_root_seed": 7301,
+    "ofdm": {
+      "fft_size": 64,
+      "cp_length": 16,
+      "pilot_spacing": 4,
+      "modulation_order": 4,
+      "noise_mode": "fixed",
+      "channel": {
+        "model": "rayleigh",
+        "delays": [
+          0,
+          1,
+          3,
+          6
+        ],
+        "decay_samples": 2.5
+      }
+    },
+    "training_reference_range_db": [
+      0.0,
+      30.0
+    ],
+    "split_counts": {
+      "debug": 2000,
+      "train": 30000,
+      "validation": 4000
+    },
+    "test_frames_per_point": 2000,
+    "primary_references_db": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
+    "extrapolation_references_db": [
+      -5,
+      35
+    ],
+    "test_conditions": [
+      {
+        "name": "primary",
+        "condition_id": 0,
+        "kind": "unseen channels, same prior",
+        "ofdm": {},
+        "references": "primary_and_extrapolation"
+      },
+      {
+        "name": "rician_k1",
+        "condition_id": 1,
+        "kind": "changed prior: Rician global linear K=1, LOS on delay 0, phase 0 rad, same diffuse PDP shape, expected energy 1",
+        "ofdm": {
+          "channel": {
+            "model": "rician",
+            "delays": [
+              0,
+              1,
+              3,
+              6
+            ],
+            "decay_samples": 2.5,
+            "k_linear": 1.0,
+            "los_path": 0,
+            "los_phase_rad": 0.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "rician_k10",
+        "condition_id": 2,
+        "kind": "changed prior: Rician global linear K=10, LOS on delay 0, phase 0 rad, same diffuse PDP shape, expected energy 1",
+        "ofdm": {
+          "channel": {
+            "model": "rician",
+            "delays": [
+              0,
+              1,
+              3,
+              6
+            ],
+            "decay_samples": 2.5,
+            "k_linear": 10.0,
+            "los_path": 0,
+            "los_phase_rad": 0.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "long_delay_spread",
+        "condition_id": 3,
+        "kind": "changed prior: Rayleigh delays 0,2,4,7,11 samples, decay 4.0 samples, CP 16 >= 11",
+        "ofdm": {
+          "channel": {
+            "model": "rayleigh",
+            "delays": [
+              0,
+              2,
+              4,
+              7,
+              11
+            ],
+            "decay_samples": 4.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "pilot_spacing_2",
+        "condition_id": 4,
+        "kind": "changed pilot layout: spacing 2 (32 pilots), same Rayleigh prior; LS-only input carries no pilot mask",
+        "ofdm": {
+          "pilot_spacing": 2
+        },
+        "references": "primary"
+      },
+      {
+        "name": "pilot_spacing_8",
+        "condition_id": 5,
+        "kind": "changed pilot layout: spacing 8 (8 pilots), same Rayleigh prior, max delay 6 < 8; LS-only input carries no pilot mask",
+        "ofdm": {
+          "pilot_spacing": 8
+        },
+        "references": "primary"
+      }
+    ],
+    "training": {
+      "optimizer": "AdamW",
+      "batch_size": 256,
+      "maximum_epochs": 60,
+      "patience": 8,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "loss": "complex MSE: mean over batch and bins of (dRe^2 + dIm^2), physical units",
+      "selection": "minimum validation complex MSE; test data never used",
+      "num_workers": 0
+    },
+    "runs": {
+      "mlp": {
+        "description": "simple baseline: flatten [2,64] -> 128 ReLU -> 128, direct output",
+        "model": {
+          "architecture": "mlp",
+          "hidden": 128,
+          "residual": false,
+          "normalization": "none"
+        },
+        "seeds": [
+          11,
+          22,
+          33
+        ]
+      },
+      "cnn_residual": {
+        "description": "main model: residual Conv1d refinement H_CNN = H_LS + correction(H_LS)",
+        "model": {
+          "architecture": "cnn",
+          "width": 32,
+          "blocks": 3,
+          "kernel_size": 5,
+          "activation": "relu",
+          "padding": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "seeds": [
+          11,
+          22,
+          33
+        ]
+      },
+      "cnn_direct": {
+        "description": "ablation: identical CNN predicting H directly, default output initialization",
+        "model": {
+          "architecture": "cnn",
+          "width": 32,
+          "blocks": 3,
+          "kernel_size": 5,
+          "activation": "relu",
+          "padding": "circular",
+          "residual": false,
+          "zero_init_output": false,
+          "normalization": "none"
+        },
+        "seeds": [
+          11
+        ]
+      },
+      "cnn_normalized": {
+        "description": "ablation: residual CNN with per-channel affine normalization fitted on training inputs only",
+        "model": {
+          "architecture": "cnn",
+          "width": 32,
+          "blocks": 3,
+          "kernel_size": 5,
+          "activation": "relu",
+          "padding": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "affine"
+        },
+        "seeds": [
+          11
+        ]
+      }
+    },
+    "representative_run": "cnn_residual",
+    "representative_seed": 11,
+    "evaluation": {
+      "equalizer": "zf",
+      "bootstrap_replicates": 1000,
+      "bootstrap_seed": 9107,
+      "example_reference_db": 10,
+      "example_frame": 0
+    },
+    "policy": "Architecture, budgets, seeds and every test condition were fixed before any test result was computed. Validation alone selects checkpoints. Test frames are identical across receivers, seeds and ablations.",
+    "main_runs": [
+      "mlp",
+      "cnn_residual"
+    ]
+  },
+  "protocol_sha256": "2814545d3511c8b04bfbcc70ac629eec40fff89b9a0ffcd628b9dea055aad7ff",
+  "source_sha256": "965bb7f49d1308c2576a4f071e1148f27f17c358b0b1e61b852f757db34a7dd5",
+  "datasets_arrays_sha256": {
+    "datasets/neural_channel_estimation/test/primary/ref_m05p0db": "7114fb03c2ec33527c050355f9d960ccec8058eb0787b11dddbef020a1569834",
+    "datasets/neural_channel_estimation/test/primary/ref_00p0db": "1220a59ee125a2574e1b16eb4163fe7591905c3b091ca06831eaffdafb9deb4f",
+    "datasets/neural_channel_estimation/test/primary/ref_05p0db": "a26ae125b19d1cac493f4ca67f4b63c1f4a9229cfe2d1bca4543fbc325cb4ac2",
+    "datasets/neural_channel_estimation/test/primary/ref_10p0db": "7a9afe93a76914fc9713dc075d11e90e1381b909ce1188779263dc76a7109c0b",
+    "datasets/neural_channel_estimation/test/primary/ref_15p0db": "ecb138fd9426c37bb77ed1fd7cef6a1550968a438d5f1041090c754876fbc5da",
+    "datasets/neural_channel_estimation/test/primary/ref_20p0db": "70812908061af682c28ff3d969af36ca70dd3290049298ccbed3588c5b5e131b",
+    "datasets/neural_channel_estimation/test/primary/ref_25p0db": "f252634f488f01f392e8c38e212e6601199e59e0d8ed2abbd0ec6cf9af533dc6",
+    "datasets/neural_channel_estimation/test/primary/ref_30p0db": "cd84cffd16e2358223e77e6393e0e4c2d7e0bb85fde625565fd799ce081db9b2",
+    "datasets/neural_channel_estimation/test/primary/ref_35p0db": "382b31fcf9f19974cdbf5a494cd875e7d2ac3f93a4add772ebcdfc8d1840aed1",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_00p0db": "0768178386e6680c3e05ff9a9be7fb8b4aa06f1d2bf98d20e13d28786634ed2f",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_05p0db": "8645f726e4e2b33d04fbc2934a57d10005b4218b782285d809777edeb6ec1f4a",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_10p0db": "591d12f765d8706f17259e5f5de15ffadb5486e97e0811aa6ba9a07b79bd4fc5",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_15p0db": "04b9e954f9b1a9ed875386954f3ddc22e5ee2ed3f7630abca5a886681cf47c53",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_20p0db": "9166c5dfc4a5721456c44a547295d05f4b6a219902b4c88e925cf711e97e2036",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_25p0db": "6afbefa3407df11aa61cc3b2cd99c452246b4458b7f0d48670a963760ea9e927",
+    "datasets/neural_channel_estimation/test/rician_k1/ref_30p0db": "be28ea28109627314f1802734d5e97d3c2f337fcd454ae2235d36b31902f5ddd",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_00p0db": "5173d8c8c7d713c2d702b633a61f468c160c35307aaa4d6e33ec20d98695e6e1",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_05p0db": "c242ca24bfcfd1fd0e2ac915066d2e22fc398c94190049ad6bc7fdce48ec5167",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_10p0db": "d073f2b392c94de2883bca3e5f0b72659eaa0dd9ff6696bc046d4b5322bd037c",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_15p0db": "abd2bef9403c35742bd3338d1fde44ac766594a084c73a629024da3891fab940",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_20p0db": "436ea69cce9aeedc340613a72c01999904161597163f3cbcc317a60486ce7b37",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_25p0db": "0486789c4a3616bdc1ea6dbc29de952f094961072f9baf8d0294b6cb63b398c4",
+    "datasets/neural_channel_estimation/test/rician_k10/ref_30p0db": "f625109af63511ecd756c3726d27c32e8bc2bb6cf179a325c251c52b2b922244",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_00p0db": "c2cb7f7180a5b97633449df9f70b5fe32084e8f82d8d74307e704dcb1fbb0209",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_05p0db": "b023e81bebd65b02c4c0c20b1862b100b1d965dafe23fb017de1b306ae3a2610",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_10p0db": "9a066fd61ac156233329966c8a387444ce875e4c95e86fbaa7b5014ddda8b312",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_15p0db": "494ee35de577a1838248ef612c96b8d04ca34eba62fccdf16801c61a032df7a1",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_20p0db": "25e839c3854cb53bd2c72e85d54d471470d4010d7f68c632c86ed54b51cff5b9",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_25p0db": "41af766a5daabf4c9be181a450833da1b584ac079c8ebb101b5c17a676c310f8",
+    "datasets/neural_channel_estimation/test/long_delay_spread/ref_30p0db": "7901ac873194b645251468a5c765599c20c08e423fbe1108ae67e53be56d61db",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_00p0db": "bbcb2499be0d53a7a86b54bdea60aa1294f8283049c05c0f8f52b75bf9815344",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_05p0db": "5d5eeaadf22e8b92fbfb6e533e50d2c76cd335617d7e0ec81eafce3e970f6844",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_10p0db": "1e47bebcf120046f6efffefddabad5dcb680b08f6351cc6c8dde504b5d024fa6",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_15p0db": "0c13f64b7c6afc52b64e573c82bdd061a79577a935668bbb9b9ddcb5decb0993",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_20p0db": "6e2eb50658b2a211664e7b269aafe2a832f5ab6a8e7b2512601d4d0f1cabcdf3",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_25p0db": "bba4fc406008bd1afd16e4e61765fef1db05564b3c41b75898cd2006c5b6463a",
+    "datasets/neural_channel_estimation/test/pilot_spacing_2/ref_30p0db": "d31e7491af759f26c4a08eb91bc61e07195677120f4efae1cefd6b9a0105e0ce",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_00p0db": "b7988e458aedad2139bd2ba2418ba08d4c1f5299e33b481623154dc15332601e",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_05p0db": "00353b689e9b6c2276f3de1baa99a41c22f44a0d3727390657b10a130292de49",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_10p0db": "8396c0bdc4f528b0e68b5d3643b72e168708b9d40f0530909426e6a7ee0654e2",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_15p0db": "ec5e0ca53949bb74c7a5e6566fcc435b790c0bd1e318423baf6cd7163427c01a",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_20p0db": "df280c6c6a2a2e839d5cb8f2433d54f6dea0e6bc3117c2dcf84560f80257cc84",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_25p0db": "a1a025a7a67af6d7118bfe2d774f02fba577abb8c442d0517f5eee976548bf63",
+    "datasets/neural_channel_estimation/test/pilot_spacing_8/ref_30p0db": "3ad731687969c1bfda9aa4fb8c3aeacbeccdafbfb1e8420988d5602933275387"
+  },
+  "checkpoints": {
+    "mlp/seed_11": "bf184f435f4b00f35b2a13e4ae9a58dac6c9205239178c6dc5dd590ed2be26d8",
+    "mlp/seed_22": "ac827ab5d06c9a5eddff10181987527697b7361b13bd1cad173bfe90814317bb",
+    "mlp/seed_33": "617b73579a9565c2387dc376201b5cb5f58726ef4c5dc1df17e7627f21387742",
+    "cnn_residual/seed_11": "8d446908cf05e39a96007c85e9a6e99a65c5a8263580cb9be47a21315e62e4db",
+    "cnn_residual/seed_22": "37b9839fd572cd95e12f83941b6b61d1c0f4c741357ba8a09f0e7973c23e4f2a",
+    "cnn_residual/seed_33": "31f38696fc69acda3e3c02327d8814f6674355a54ff325c1cedff694143db30c",
+    "cnn_direct/seed_11": "55f2ee3ad3037bf8dbf0a81acc5a4a24dffc106a32426b8a8d667f3834f44d2a",
+    "cnn_normalized/seed_11": "409e93e9b51efc2f0bacf702b137e0fe7048cf446c97587b4ec9789b3f336a89"
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "packages": {
+      "neural-ofdm": "0.1.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "torch": "2.9.1+cu128"
+    }
+  },
+  "hardware": {
+    "device": "cuda",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+    "torch_threads": 8,
+    "cuda_available": true,
+    "torch_cuda_build": "12.8",
+    "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU"
+  },
+  "timing_hardware": {
+    "cpu": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+    "cpu_threads": 8
+  },
+  "mixture_noise_variance": 0.14462006247378284,
+  "receiver_information": {
+    "perfect": "true realized H (oracle; only receiver given truth at inference)",
+    "ls": "known pilots only",
+    "lmmse_matched": "known pilots, true test prior mean/covariance, configured sigma^2",
+    "lmmse_training_prior": "known pilots, Rayleigh training prior, configured sigma^2",
+    "lmmse_snr_unaware": "known pilots, Rayleigh training prior, sigma^2 replaced by its mean over the training uniform-dB mixture; best linear estimator without SNR knowledge",
+    "neural": "LS real/imag features only; no sigma^2, pilot mask or truth"
+  },
+  "equalizer": "zf",
+  "uncertainty": "95% percentile bootstrap over independent frames with shared indices across receivers; zero-error frames report a conservative frame-event upper95 instead",
+  "timing_definitions": "median of repeated perf_counter wall times after warmup; CUDA synchronized; attention-map collection disabled; scopes listed per row",
+  "elapsed_seconds": 13.623789300007047
+}

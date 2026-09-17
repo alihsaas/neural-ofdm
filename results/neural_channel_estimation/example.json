@@ -1,0 +1,24 @@
+{
+  "condition": "primary",
+  "frame": 0,
+  "reference_db": 10.0,
+  "selection": "frame index and reference predeclared in the protocol",
+  "nmse": {
+    "ls": 0.11349001847618982,
+    "lmmse_matched": 0.0354622357929863,
+    "mlp": 0.037087969117771,
+    "cnn_residual": 0.05036147872183932
+  },
+  "constellation_frames": 50,
+  "constellation_ber": {
+    "perfect": 0.036875,
+    "ls": 0.06458333333333334,
+    "lmmse_matched": 0.04645833333333333,
+    "mlp": 0.04875,
+    "cnn_residual": 0.050625
+  },
+  "models": [
+    "mlp/seed_11",
+    "cnn_residual/seed_11"
+  ]
+}
