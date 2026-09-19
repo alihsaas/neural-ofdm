@@ -85,3 +85,7 @@ I generate OFDM frames with separate seeds for training, validation, and test. R
 I use a residual CNN to refine the pilot-based least-squares channel estimate. Train with `uv run --extra neural python scripts/train_channel_estimator.py` and score it with `uv run --extra neural python scripts/evaluate_channel_estimator.py`.
 
 The CNN benchmark results are in [results/neural_channel_estimation](results/neural_channel_estimation/).
+
+## Attention estimators
+
+I added a Transformer and a CNN/Transformer hybrid. Use `configs/attention_channel_estimation/protocol.json` with the dataset, training, and evaluation scripts.
