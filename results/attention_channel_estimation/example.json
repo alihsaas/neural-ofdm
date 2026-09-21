@@ -1,0 +1,30 @@
+{
+  "condition": "primary",
+  "frame": 0,
+  "reference_db": 10.0,
+  "selection": "frame index and reference predeclared in the protocol",
+  "nmse": {
+    "ls": 0.03516969268502494,
+    "lmmse_matched": 0.02260786961037714,
+    "cnn_residual": 0.027282380869089566,
+    "dilated_cnn_w40": 0.027973779747888276,
+    "transformer_d64_h4_l2": 0.02672766430375877,
+    "hybrid_d64_h4_l2": 0.026398970062115248
+  },
+  "constellation_frames": 50,
+  "constellation_ber": {
+    "perfect": 0.035833333333333335,
+    "ls": 0.060833333333333336,
+    "lmmse_matched": 0.03958333333333333,
+    "cnn_residual": 0.048125,
+    "dilated_cnn_w40": 0.04,
+    "transformer_d64_h4_l2": 0.04145833333333333,
+    "hybrid_d64_h4_l2": 0.03916666666666667
+  },
+  "models": [
+    "cnn_residual/seed_11",
+    "dilated_cnn_w40/seed_11",
+    "transformer_d64_h4_l2/seed_11",
+    "hybrid_d64_h4_l2/seed_11"
+  ]
+}

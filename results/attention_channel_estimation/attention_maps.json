@@ -1,0 +1,196 @@
+[
+  {
+    "key": "transformer_d64_h4_l2__primary__5db",
+    "model": "transformer_d64_h4_l2/seed_11",
+    "condition": "primary",
+    "reference_db": 5,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36,
+      40,
+      44,
+      48,
+      52,
+      56,
+      60
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 1.1920928955078125e-07,
+    "prediction_max_abs_difference": 0.00019168853759765625,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  },
+  {
+    "key": "hybrid_d64_h4_l2__primary__5db",
+    "model": "hybrid_d64_h4_l2/seed_11",
+    "condition": "primary",
+    "reference_db": 5,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36,
+      40,
+      44,
+      48,
+      52,
+      56,
+      60
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 1.1920928955078125e-07,
+    "prediction_max_abs_difference": 8.660554885864258e-05,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  },
+  {
+    "key": "transformer_d64_h4_l2__primary__25db",
+    "model": "transformer_d64_h4_l2/seed_11",
+    "condition": "primary",
+    "reference_db": 25,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36,
+      40,
+      44,
+      48,
+      52,
+      56,
+      60
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 1.7881393432617188e-07,
+    "prediction_max_abs_difference": 0.00012498348951339722,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  },
+  {
+    "key": "hybrid_d64_h4_l2__primary__25db",
+    "model": "hybrid_d64_h4_l2/seed_11",
+    "condition": "primary",
+    "reference_db": 25,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36,
+      40,
+      44,
+      48,
+      52,
+      56,
+      60
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 2.384185791015625e-07,
+    "prediction_max_abs_difference": 7.975101470947266e-05,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  },
+  {
+    "key": "transformer_d64_h4_l2__pilot_spacing_8__25db",
+    "model": "transformer_d64_h4_l2/seed_11",
+    "condition": "pilot_spacing_8",
+    "reference_db": 25,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 1.1920928955078125e-07,
+    "prediction_max_abs_difference": 0.0001938343048095703,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  },
+  {
+    "key": "hybrid_d64_h4_l2__pilot_spacing_8__25db",
+    "model": "hybrid_d64_h4_l2/seed_11",
+    "condition": "pilot_spacing_8",
+    "reference_db": 25,
+    "frame": 0,
+    "pilot_indices": [
+      0,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      56
+    ],
+    "shape": "[layers, heads, query_bin, key_bin]",
+    "map_dims": [
+      2,
+      4,
+      64,
+      64
+    ],
+    "row_sum_max_error": 1.7881393432617188e-07,
+    "prediction_max_abs_difference": 7.024407386779785e-05,
+    "source": "post-softmax MultiheadAttention weights, eval mode, per head"
+  }
+]

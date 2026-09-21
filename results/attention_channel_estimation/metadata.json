@@ -1,0 +1,549 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "schema_version": 2,
+    "name": "attention_channel_estimation",
+    "paths": {
+      "training_datasets": "datasets/neural_channel_estimation",
+      "test_datasets": "datasets/attention_channel_estimation",
+      "checkpoints": "checkpoints/attention_channel_estimation",
+      "results": "results/attention_channel_estimation"
+    },
+    "dataset_root_seed": 7301,
+    "ofdm": {
+      "fft_size": 64,
+      "cp_length": 16,
+      "pilot_spacing": 4,
+      "modulation_order": 4,
+      "noise_mode": "fixed",
+      "channel": {
+        "model": "rayleigh",
+        "delays": [
+          0,
+          1,
+          3,
+          6
+        ],
+        "decay_samples": 2.5
+      }
+    },
+    "training_reference_range_db": [
+      0.0,
+      30.0
+    ],
+    "split_counts": {
+      "debug": 2000,
+      "train": 30000,
+      "validation": 4000
+    },
+    "test_frames_per_point": 2000,
+    "primary_references_db": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
+    "extrapolation_references_db": [
+      -5,
+      35
+    ],
+    "test_conditions": [
+      {
+        "name": "primary",
+        "condition_id": 100,
+        "kind": "fresh holdout; unseen channels, training prior (delays 0,1,3,6; decay 2.5); pilot spacing 4; QPSK",
+        "ofdm": {},
+        "references": "primary_and_extrapolation"
+      },
+      {
+        "name": "pilot_spacing_2",
+        "condition_id": 101,
+        "kind": "pilot pattern shift: spacing 2 (32 pilots); frozen networks; LS-only input has no pilot mask",
+        "ofdm": {
+          "pilot_spacing": 2
+        },
+        "references": "primary"
+      },
+      {
+        "name": "pilot_spacing_8",
+        "condition_id": 102,
+        "kind": "pilot pattern shift: spacing 8 (8 pilots, max delay 6 < 8); frozen networks",
+        "ofdm": {
+          "pilot_spacing": 8
+        },
+        "references": "primary"
+      },
+      {
+        "name": "delay_short",
+        "condition_id": 103,
+        "kind": "delay spread shift: Rayleigh delays 0,1,2; decay 1.0 samples",
+        "ofdm": {
+          "channel": {
+            "model": "rayleigh",
+            "delays": [
+              0,
+              1,
+              2
+            ],
+            "decay_samples": 1.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "delay_long",
+        "condition_id": 104,
+        "kind": "delay spread shift: Rayleigh delays 0,2,4,7,11; decay 4.0 samples; CP 16 >= 11",
+        "ofdm": {
+          "channel": {
+            "model": "rayleigh",
+            "delays": [
+              0,
+              2,
+              4,
+              7,
+              11
+            ],
+            "decay_samples": 4.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "pdp_flat",
+        "condition_id": 105,
+        "kind": "PDP shift: training delays 0,1,3,6 kept, decay changed 2.5 -> 6.0 samples",
+        "ofdm": {
+          "channel": {
+            "model": "rayleigh",
+            "delays": [
+              0,
+              1,
+              3,
+              6
+            ],
+            "decay_samples": 6.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "rician_k1",
+        "condition_id": 106,
+        "kind": "channel shift: Rician global linear K=1 (0 dB), unit LOS on delay 0, phase 0 rad, diffuse PDP of training prior scaled by 1/(K+1); expected energy 1",
+        "ofdm": {
+          "channel": {
+            "model": "rician",
+            "delays": [
+              0,
+              1,
+              3,
+              6
+            ],
+            "decay_samples": 2.5,
+            "k_linear": 1.0,
+            "los_path": 0,
+            "los_phase_rad": 0.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "rician_k10",
+        "condition_id": 107,
+        "kind": "channel shift: Rician global linear K=10 (10 dB), unit LOS on delay 0, phase 0 rad; expected energy 1",
+        "ofdm": {
+          "channel": {
+            "model": "rician",
+            "delays": [
+              0,
+              1,
+              3,
+              6
+            ],
+            "decay_samples": 2.5,
+            "k_linear": 10.0,
+            "los_path": 0,
+            "los_phase_rad": 0.0
+          }
+        },
+        "references": "primary"
+      },
+      {
+        "name": "qam16",
+        "condition_id": 108,
+        "kind": "downstream modulation: 16-QAM payload, unchanged unit-energy pilots and training prior",
+        "ofdm": {
+          "modulation_order": 16
+        },
+        "references": "primary"
+      }
+    ],
+    "training": {
+      "optimizer": "AdamW",
+      "batch_size": 256,
+      "maximum_epochs": 60,
+      "patience": 8,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "loss": "complex MSE: mean over batch and bins of (dRe^2 + dIm^2), physical units",
+      "selection": "minimum validation complex MSE; test data never used",
+      "num_workers": 0
+    },
+    "external_runs": {
+      "mlp": {
+        "checkpoints": "checkpoints/neural_channel_estimation",
+        "seeds": [
+          11,
+          22,
+          33
+        ],
+        "label": "MLP baseline (CNN study checkpoints)"
+      },
+      "cnn_residual": {
+        "checkpoints": "checkpoints/neural_channel_estimation",
+        "seeds": [
+          11,
+          22,
+          33
+        ],
+        "label": "Residual CNN (CNN study checkpoints; same data, loss, optimizer and budget)"
+      }
+    },
+    "runs": {
+      "transformer_d64_h4_l2": {
+        "description": "pure encoder-only residual Transformer, circular Fourier positions",
+        "model": {
+          "architecture": "transformer",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "seeds": [
+          11,
+          22,
+          33
+        ]
+      },
+      "hybrid_d64_h4_l2": {
+        "description": "Conv1d front end (32 ch, 1 residual block, k=5, circular) -> 32->64 projection -> 2-layer encoder",
+        "model": {
+          "architecture": "hybrid",
+          "conv_width": 32,
+          "conv_blocks": 1,
+          "kernel_size": 5,
+          "conv_activation": "relu",
+          "padding": "circular",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "seeds": [
+          11,
+          22,
+          33
+        ]
+      },
+      "dilated_cnn_w40": {
+        "description": "context/capacity control without attention: residual CNN, width 40, dilations 1,2,4,8, receptive field 129 >= 64 bins",
+        "model": {
+          "architecture": "cnn",
+          "width": 40,
+          "blocks": 4,
+          "kernel_size": 5,
+          "activation": "relu",
+          "padding": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none",
+          "dilations": [
+            1,
+            2,
+            4,
+            8
+          ]
+        },
+        "seeds": [
+          11,
+          22,
+          33
+        ]
+      },
+      "transformer_no_position": {
+        "description": "ablation: pure Transformer without positional information (permutation equivariant)",
+        "model": {
+          "architecture": "transformer",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "none",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "seeds": [
+          11
+        ]
+      },
+      "hybrid_no_position": {
+        "description": "ablation: hybrid without explicit positions (convolution still orders tokens locally)",
+        "model": {
+          "architecture": "hybrid",
+          "conv_width": 32,
+          "conv_blocks": 1,
+          "kernel_size": 5,
+          "conv_activation": "relu",
+          "padding": "circular",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "none",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "seeds": [
+          11
+        ]
+      },
+      "cnn_residual_lr3e-4": {
+        "description": "learning-rate sensitivity: residual CNN at learning rate 3e-4",
+        "model": {
+          "architecture": "cnn",
+          "width": 32,
+          "blocks": 3,
+          "kernel_size": 5,
+          "activation": "relu",
+          "padding": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "training": {
+          "learning_rate": 0.0003
+        },
+        "seeds": [
+          11
+        ]
+      },
+      "transformer_d64_h4_l2_lr3e-4": {
+        "description": "learning-rate sensitivity: pure Transformer at learning rate 3e-4",
+        "model": {
+          "architecture": "transformer",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "training": {
+          "learning_rate": 0.0003
+        },
+        "seeds": [
+          11
+        ]
+      },
+      "hybrid_d64_h4_l2_lr3e-4": {
+        "description": "learning-rate sensitivity: hybrid at learning rate 3e-4",
+        "model": {
+          "architecture": "hybrid",
+          "conv_width": 32,
+          "conv_blocks": 1,
+          "kernel_size": 5,
+          "conv_activation": "relu",
+          "padding": "circular",
+          "d_model": 64,
+          "heads": 4,
+          "layers": 2,
+          "feedforward": 128,
+          "dropout": 0.05,
+          "activation": "gelu",
+          "positional": "circular",
+          "residual": true,
+          "zero_init_output": true,
+          "normalization": "none"
+        },
+        "training": {
+          "learning_rate": 0.0003
+        },
+        "seeds": [
+          11
+        ]
+      }
+    },
+    "main_runs": [
+      "cnn_residual",
+      "dilated_cnn_w40",
+      "transformer_d64_h4_l2",
+      "hybrid_d64_h4_l2"
+    ],
+    "representative_run": "hybrid_d64_h4_l2",
+    "representative_seed": 11,
+    "evaluation": {
+      "equalizer": "zf",
+      "bootstrap_replicates": 1000,
+      "bootstrap_seed": 9203,
+      "example_reference_db": 10,
+      "example_frame": 0,
+      "attention_example_references_db": [
+        5,
+        25
+      ]
+    },
+    "policy": "Architectures, budgets, seeds, the learning-rate sensitivity check and all holdout conditions were fixed before any neural test result existed. The holdout uses condition ids 100-108, disjoint from the CNN-study test streams. Validation alone selects checkpoints. Every frozen checkpoint, including CNN-study checkpoints, is evaluated on the same holdout frames."
+  },
+  "protocol_sha256": "87f06a3a61d68948024cc212bfff4b939e7dd222ec7474fdbd3cfba5ffa72814",
+  "source_sha256": "965bb7f49d1308c2576a4f071e1148f27f17c358b0b1e61b852f757db34a7dd5",
+  "datasets_arrays_sha256": {
+    "datasets/attention_channel_estimation/test/primary/ref_m05p0db": "92059632459e41fc357e6681880d26a13af89349bf4f85778de0679e3152aa9f",
+    "datasets/attention_channel_estimation/test/primary/ref_00p0db": "d5509d38d7c3388784107a45d3dfa4e86fc6871d319b2893b8af3b4ad676bf62",
+    "datasets/attention_channel_estimation/test/primary/ref_05p0db": "bda601b78dcbc9dff71d1ef6dcadb2d7faf525c9c5caceebb0292fa64020ad9d",
+    "datasets/attention_channel_estimation/test/primary/ref_10p0db": "f9a2ca7e558a8cfe03d134c04504ac16e9b2308c1c48f7e80ace5603ace4af3c",
+    "datasets/attention_channel_estimation/test/primary/ref_15p0db": "c48b33b62cdba4c5bbd25795d13687665f52d1ebb9feaf0d98117579a90b0b97",
+    "datasets/attention_channel_estimation/test/primary/ref_20p0db": "22cec95a182a6c79af988bf053f46075cc7ab6e6980680406fe8105bda573e8a",
+    "datasets/attention_channel_estimation/test/primary/ref_25p0db": "196ff96f20c2715d8842cba3c612e5025dc7bd19631f15377b194da6e28e4c69",
+    "datasets/attention_channel_estimation/test/primary/ref_30p0db": "0e16c5672bf06774a3920134fd7b25031d8b134df982216f3a0f7d525197ae1c",
+    "datasets/attention_channel_estimation/test/primary/ref_35p0db": "866909b39abf84245d57f176294e8228dc90fd77ce1e3d86917e913a2aa3b911",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_00p0db": "f00e3028efcb90b89a8cf41598064f4d41c1ad69510eb125dfe2baa5d2dcd971",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_05p0db": "3895419ebcbad8b6fa4e643306b5648f8a72d1a78942ec208c00ee674fe92274",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_10p0db": "82a6e39acb1540afa3aeb5f37aca0c58ac02c9fcba31685f4cbec5777ca5221c",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_15p0db": "08b71f726734b67d23533a9e778a8d98b37d130ace4b60261727943c841b99f3",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_20p0db": "835fd11c1a6a0bef4979b2beae10a9d8424a504c22e91d9fb5892e7d7979dd45",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_25p0db": "a6bca6ed5d99d67fc41cde25102363d70f7d7e1814c11b935a349835be4bda91",
+    "datasets/attention_channel_estimation/test/pilot_spacing_2/ref_30p0db": "3162e95c8e0dd44de17ff95f4855f55c91b481211d2e2fc2e30713b10d22de0d",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_00p0db": "2f89b0f6241d1e83b4c21b6f2bdf1850a30264751e1410e575a1c01164b334e0",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_05p0db": "ddf5a8c98525a3d2026e0d30071ababab4aee88528cd22a3174db0cfbdb70658",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_10p0db": "86ac54bc2851bd9b409afc81b223ab02fb32364319ab4b24d9e8d9e09d3fc28b",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_15p0db": "40adb024e7edead6d950e93bf94753bba36be9b6c86437040624fc9ec6b3bbc8",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_20p0db": "5a43b85a42c7a2e133ac470c40306d4ba24d7fe130023aab3f2cd36b474b33dd",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_25p0db": "f581e72ea49322fdd893c3b3fa4ab45a6d2a9053b898a01105e90842a5e387ec",
+    "datasets/attention_channel_estimation/test/pilot_spacing_8/ref_30p0db": "a3cd5abf759604ae63a4613efd9ed7b932562ca990e070c718a4c799b08e988d",
+    "datasets/attention_channel_estimation/test/delay_short/ref_00p0db": "6338386a870830fe4479f32dad8680d3229369eb79c7b1df1a50595fa13ef719",
+    "datasets/attention_channel_estimation/test/delay_short/ref_05p0db": "fa1b3556b0d9f5972026a2351a8381d8634cd879ee3dc1cc00a03a2cd8d435e6",
+    "datasets/attention_channel_estimation/test/delay_short/ref_10p0db": "312373d84a90404c321e2e4ea19330451a09529859623ef138c5802412b401b6",
+    "datasets/attention_channel_estimation/test/delay_short/ref_15p0db": "b0d604c1408591afce6e3383149723406751cfb1371635e019cb3aafeb1946a4",
+    "datasets/attention_channel_estimation/test/delay_short/ref_20p0db": "bbd8f4d0e230a6e20056ce83feac0c499a19428a4d64ffc8fcad63b003ff4d22",
+    "datasets/attention_channel_estimation/test/delay_short/ref_25p0db": "73054492c48c8d3909df39b76694368fd5e94fa4a8dc3418deb73bfce0730ab8",
+    "datasets/attention_channel_estimation/test/delay_short/ref_30p0db": "2cc74c529635cea4ae7c0afe313efdefda7a51a627a4e6a9f66ba6a7615f27ae",
+    "datasets/attention_channel_estimation/test/delay_long/ref_00p0db": "834faf135d7cd6384f53ddf6e1e8d446d0d1571301a24d47aaaf783c2b3f949b",
+    "datasets/attention_channel_estimation/test/delay_long/ref_05p0db": "182945f24058f5c8f33d7a17240cecf6d4ef84950c0c2dacf46852531c3ce589",
+    "datasets/attention_channel_estimation/test/delay_long/ref_10p0db": "9a24b436bcf4b19466ea3d89d5b75b71510affc4bb8a9265a0678e630e171b2e",
+    "datasets/attention_channel_estimation/test/delay_long/ref_15p0db": "b7e29c72047af4dcb4a18da0235d609d697023f26cec1981dad89c1feedcdd4e",
+    "datasets/attention_channel_estimation/test/delay_long/ref_20p0db": "5b481b831ec68612755ce037aa90a13a7c7b02b4d22e18cbeb5f4907394fe535",
+    "datasets/attention_channel_estimation/test/delay_long/ref_25p0db": "7f7a33690e9592befc6ab648869214f67509dfbec8794c328068b216581d793b",
+    "datasets/attention_channel_estimation/test/delay_long/ref_30p0db": "4072fdbec48de587f3ef5c89e493578d7d56d3f12d634f8ef8c653edfa9d4ec1",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_00p0db": "a4b969dfb28ca7de382d1e31a34a268ce59c4b7b7599652be000f02a3a24e5e8",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_05p0db": "1a3b7b038da3d55612076296269d7713799190d6f7aed409469ab3dc3bd7d410",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_10p0db": "c472a43cd2445d06aaedf0406a3a86ce8ca470688cac11f4eb30f5dc2df7904d",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_15p0db": "d0b77c5905627d91dabc288438630a3d02d474536899933f7c4161287e0c2744",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_20p0db": "f508708ff307fd81b51601b35e5ef18d70e5ea64d7cfbcf95ec36c52e2e99464",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_25p0db": "f4f2efe6389d2d3b96de987d234db4d0f8633461407d7897eace358a4b6f964b",
+    "datasets/attention_channel_estimation/test/pdp_flat/ref_30p0db": "b3c43c963384663adb661a150d5ae11e12adec6e68bbadb0d4b08c29ddb675f2",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_00p0db": "cc4859dfb16de00526c4008d7bdddef9466d170916a0d3eda7b4f654c0a5e9ee",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_05p0db": "7588f059ac41eafb25b69e0b4c29bd6f9c5ab73bbb18304a79cb7a4af72d31da",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_10p0db": "b297487a9a83969eb41f5fa3080a4e678e30046b31fbf3ce956524d979077716",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_15p0db": "8a8e2c3d8369e6431fb01c17d4dabc9e5836b16fa3e8167325a08e4130fa0229",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_20p0db": "3a4b8dbeb4b0dbadea5cdea526bb1bc48f8c672937c1a39b43ae469746d59cdc",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_25p0db": "038d217c55f39613d77380f3c61b97e984eb33c33057c042989f10f0a549d94f",
+    "datasets/attention_channel_estimation/test/rician_k1/ref_30p0db": "058c9e952ff4b585b5d7d0d2c152c2a4dd38ab52199f2085d913b732aa6f467b",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_00p0db": "9494e75097fffed58e625731337fc0c33c346a7abd5505dd17046bb7d1cbefe3",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_05p0db": "74bf7e3c7d5501dd02251b01144bb769b068f6088a0fd84588c7da3012946395",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_10p0db": "a1f89f063e227ed4a640d559f3b4095eb90ae6bf25bf8148f19237822836be0d",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_15p0db": "9cea9010be9181ec66000fd63c3cefb6dc756cf103afe4770602ff1bd65274de",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_20p0db": "eee93f0d5d53231ae47e1451229bdbaf13ba93f264fc083a21d7cf920cc7e227",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_25p0db": "e6fb96610af1d81f77a9acc6b00c36de7c2806994823099fc5c4efe25c25258b",
+    "datasets/attention_channel_estimation/test/rician_k10/ref_30p0db": "467e68a883fb437d0a2497ec3fa4b19073ee2f92105fbbeba83dc6c5b0724491",
+    "datasets/attention_channel_estimation/test/qam16/ref_00p0db": "f96bd7ff8f03a516a54dfb61f3bf56794023d3e7abf917bd90ebb5b2f7e1705a",
+    "datasets/attention_channel_estimation/test/qam16/ref_05p0db": "48fd0e23efae5f0b22a9d7edacf9b4128fbc7a56ac40e22acc0ccbbdd9ae37c1",
+    "datasets/attention_channel_estimation/test/qam16/ref_10p0db": "4e747df298cb634cda2555e7f8fac2e2ab2473cc762201fcdeb9ff9778312826",
+    "datasets/attention_channel_estimation/test/qam16/ref_15p0db": "caa8c457a9c9df7b24aeaea3babfa1562080bcf8ec0f6fede6e391a7713ab966",
+    "datasets/attention_channel_estimation/test/qam16/ref_20p0db": "0751f088e3fdc0fb869c93d8eb6647f61d8cc494046d34069f1180da066054e6",
+    "datasets/attention_channel_estimation/test/qam16/ref_25p0db": "d22acaf90db80e12935791b829a3876b3538ba07fa9bb606e1465ee470bcc970",
+    "datasets/attention_channel_estimation/test/qam16/ref_30p0db": "3b945bb411fc7104c711e9a6fdf28c173d1958384aef9aedcfaa12c5768b61a3"
+  },
+  "checkpoints": {
+    "mlp/seed_11": "bf184f435f4b00f35b2a13e4ae9a58dac6c9205239178c6dc5dd590ed2be26d8",
+    "mlp/seed_22": "ac827ab5d06c9a5eddff10181987527697b7361b13bd1cad173bfe90814317bb",
+    "mlp/seed_33": "617b73579a9565c2387dc376201b5cb5f58726ef4c5dc1df17e7627f21387742",
+    "cnn_residual/seed_11": "8d446908cf05e39a96007c85e9a6e99a65c5a8263580cb9be47a21315e62e4db",
+    "cnn_residual/seed_22": "37b9839fd572cd95e12f83941b6b61d1c0f4c741357ba8a09f0e7973c23e4f2a",
+    "cnn_residual/seed_33": "31f38696fc69acda3e3c02327d8814f6674355a54ff325c1cedff694143db30c",
+    "transformer_d64_h4_l2/seed_11": "ad9b598b14691678ff30f822da9d4e61901d6af69965091e48bafad1f36c664b",
+    "transformer_d64_h4_l2/seed_22": "60f6600ab935984adaf32b6e441663028100da4e38c4612739b4b633f22dfb40",
+    "transformer_d64_h4_l2/seed_33": "519ae27e79c67a877f3554bc1b0f684b5c44cd7f9defa96185fc6b4b9eaa367f",
+    "hybrid_d64_h4_l2/seed_11": "2f430f2bda2fa444871761ffadd64e7f870f96099914906be21a4cf0a27a40fc",
+    "hybrid_d64_h4_l2/seed_22": "fc906218ffb1ace5f6787e213452a689389c9ed8c7cea1dbdbebf492b775a275",
+    "hybrid_d64_h4_l2/seed_33": "b6375200384126c720ea05f57966d274dc97c292465803759f7b80546c99d5f7",
+    "dilated_cnn_w40/seed_11": "6d1d13c4ddb04b5a7fcd824178de1217aee37ea9e4839c3177d8fbe31bd936d4",
+    "dilated_cnn_w40/seed_22": "91c5a9eff4f193a51a87e7d478a63d67cd5450032e9a5c496d6839c826ce1dc5",
+    "dilated_cnn_w40/seed_33": "95881251c525924a90364d04bc3806b6e86a088605dcc4a65ca72d186a6721bc",
+    "transformer_no_position/seed_11": "3a1f5d1a9de8980a3d5872679be36f1e7f9a0ca0fd62be51f7373c6f2ce3ff8f",
+    "hybrid_no_position/seed_11": "5fe76c5996396065098641aab2fe7565a2fdb86cb28bce2624c685a818905baf",
+    "cnn_residual_lr3e-4/seed_11": "7b6c734583bcb3f83980b7227e238ed4492a20c2efa56ad7902b8201e46f085c",
+    "transformer_d64_h4_l2_lr3e-4/seed_11": "0fb728669521f41d4fc2e66b8d4c0f38e7f6b338eb6d2943f3af6fa1876205ed",
+    "hybrid_d64_h4_l2_lr3e-4/seed_11": "567e80eedfbe0d0085056678505f585812e689d5d436f077dac8b5bf8ab288bc"
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "packages": {
+      "neural-ofdm": "0.1.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "torch": "2.9.1+cu128"
+    }
+  },
+  "hardware": {
+    "device": "cuda",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+    "torch_threads": 8,
+    "cuda_available": true,
+    "torch_cuda_build": "12.8",
+    "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU"
+  },
+  "timing_hardware": {
+    "cpu": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+    "cpu_threads": 8
+  },
+  "mixture_noise_variance": 0.14462006247378284,
+  "receiver_information": {
+    "perfect": "true realized H (oracle; only receiver given truth at inference)",
+    "ls": "known pilots only",
+    "lmmse_matched": "known pilots, true test prior mean/covariance, configured sigma^2",
+    "lmmse_training_prior": "known pilots, Rayleigh training prior, configured sigma^2",
+    "lmmse_snr_unaware": "known pilots, Rayleigh training prior, sigma^2 replaced by its mean over the training uniform-dB mixture; best linear estimator without SNR knowledge",
+    "neural": "LS real/imag features only; no sigma^2, pilot mask or truth"
+  },
+  "equalizer": "zf",
+  "uncertainty": "95% percentile bootstrap over independent frames with shared indices across receivers; zero-error frames report a conservative frame-event upper95 instead",
+  "timing_definitions": "median of repeated perf_counter wall times after warmup; CUDA synchronized; attention-map collection disabled; scopes listed per row",
+  "elapsed_seconds": 2865.92985689998
+}

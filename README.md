@@ -89,3 +89,5 @@ The CNN benchmark results are in [results/neural_channel_estimation](results/neu
 ## Attention estimators
 
 I added a Transformer and a CNN/Transformer hybrid. Use `configs/attention_channel_estimation/protocol.json` with the dataset, training, and evaluation scripts.
+
+The attention benchmark results are in [results/attention_channel_estimation](results/attention_channel_estimation/).
