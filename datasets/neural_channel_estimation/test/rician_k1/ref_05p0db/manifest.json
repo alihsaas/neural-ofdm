@@ -1,0 +1,277 @@
+{
+  "schema_version": 2,
+  "configuration": {
+    "ofdm": {
+      "fft_size": 64,
+      "cp_length": 16,
+      "pilot_spacing": 4,
+      "pilot_value": [
+        0.7071067811865475,
+        0.7071067811865475
+      ],
+      "modulation_order": 4,
+      "snr_db": 20.0,
+      "random_seed": 2026,
+      "channel_model": "fixed",
+      "channel_taps": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.35,
+          0.15
+        ],
+        [
+          0.12,
+          -0.1
+        ]
+      ],
+      "rayleigh_powers": [
+        1.0,
+        0.4,
+        0.15,
+        0.05
+      ],
+      "channel": {
+        "model": "rician",
+        "delays": [
+          0,
+          1,
+          3,
+          6
+        ],
+        "powers": null,
+        "decay_samples": 2.5,
+        "k_linear": 1.0,
+        "los_path": 0,
+        "los_phase_rad": 0.0,
+        "fixed_taps": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.35,
+            0.15
+          ],
+          [
+            0.12,
+            -0.1
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ]
+      },
+      "noise_mode": "fixed",
+      "reference_esn0_db": 20.0,
+      "pilot_values": null
+    },
+    "count": 2000,
+    "root_seed": 7301,
+    "split": "test",
+    "condition_id": 1,
+    "reference_range_db": [
+      0.0,
+      30.0
+    ],
+    "fixed_reference_db": 5.0,
+    "store_frames": true
+  },
+  "configuration_sha256": "7db67ec8e63deeb54ea87834dd8a860371c8e57236a4dd7b463bc46303f3e74f",
+  "source_sha256": "b8c49e0d9beb62a1d8a18513aae07646485b046de3f89bdbe92049dabb636898",
+  "arrays_sha256": "8645f726e4e2b33d04fbc2934a57d10005b4218b782285d809777edeb6ec1f4a",
+  "rng": "PCG64 per sample: SeedSequence([root_seed, split_id, condition_id, sample_index, component]); components 0 reference, 1 payload, 2 channel, 3 noise",
+  "split_ids": {
+    "train": 0,
+    "validation": 1,
+    "test": 2,
+    "debug": 3
+  },
+  "split": "test",
+  "split_id": 2,
+  "condition_id": 1,
+  "groups": "one independent channel per sample; group key (root_seed, split_id, condition_id, sample_index); no augmentation or shared channels",
+  "count": 2000,
+  "channel": {
+    "model": "rician",
+    "delays": [
+      0,
+      1,
+      3,
+      6
+    ],
+    "powers": null,
+    "decay_samples": 2.5,
+    "k_linear": 1.0,
+    "los_path": 0,
+    "los_phase_rad": 0.0,
+    "fixed_taps": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.35,
+        0.15
+      ],
+      [
+        0.12,
+        -0.1
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "pilot_indices": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60
+  ],
+  "pilot_symbols": [
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ],
+    [
+      0.7071067811865475,
+      0.7071067811865475
+    ]
+  ],
+  "modulation_order": 4,
+  "noise_mode": "fixed",
+  "noise_variance": "sigma^2=10^(-reference_esn0_db/10) with Es=1, independent of channel",
+  "reference_sampling": "fixed at fixed_reference_db",
+  "feature_information": "periodic pilot LS real/imag only; no noise level, truth, payload, realized power or pilot mask is passed to model.forward",
+  "target": "true H, ordinary unscaled FIR FFT, unshifted FFT order including DC",
+  "arrays": {
+    "inputs": {
+      "shape": [
+        2000,
+        2,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "targets": {
+      "shape": [
+        2000,
+        2,
+        64
+      ],
+      "dtype": "float32"
+    },
+    "reference_esn0_db": {
+      "shape": [
+        2000
+      ],
+      "dtype": "float64"
+    },
+    "sample_ids": {
+      "shape": [
+        2000
+      ],
+      "dtype": "int64"
+    },
+    "received_grids": {
+      "shape": [
+        2000,
+        64
+      ],
+      "dtype": "complex128"
+    },
+    "reference_bits": {
+      "shape": [
+        2000,
+        96
+      ],
+      "dtype": "uint8"
+    }
+  },
+  "classical_dtype": "complex128",
+  "generation_seconds": 4.382589099986944,
+  "storage_bytes": 4321550,
+  "evaluation_replay": "replay identifiers plus this configuration and source digest; evaluation verifies LS, target, reference, received grid and bits before comparing",
+  "runtime": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "neural-ofdm": "0.1.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1"
+    }
+  }
+}
